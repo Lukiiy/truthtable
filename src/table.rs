@@ -2,17 +2,14 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::expression::Expression;
 
-const TRUE: &str = "T";
-const FALSE: &str = "F";
-
-fn bool2str(val: bool) -> &'static str {
-    if val { TRUE } else { FALSE }
+fn bool2str<'a>(val: bool, t: &'a str, f: &'a str) -> &'a str {
+    if val { t } else { f }
 }
 
 /// Pretty print a truth table
 ///
 /// Each column is either a variable or a subexpression
-pub fn print_table(expressions: &[Expression]) {
+pub fn print_table(expressions: &[Expression], truesym: &str, falsesym: &str) {
     let mut var_set = BTreeSet::new();
 
     for expr in expressions {
@@ -87,13 +84,13 @@ pub fn print_table(expressions: &[Expression]) {
         let mut row_line = String::from("│");
 
         for (i, var) in variables.iter().enumerate() { // variable columns
-            let cell = bool2str(*assignment.get(var).unwrap());
+            let cell = bool2str(*assignment.get(var).unwrap(), truesym, falsesym);
 
             row_line.push_str(&format!(" {:^w$} │", cell, w = var_widths[i]));
         }
 
         for (i, expr) in columns.iter().enumerate() { // expression columns
-            let cell = bool2str(expr.evaluate(&assignment));
+            let cell = bool2str(expr.evaluate(&assignment), truesym, falsesym);
 
             row_line.push_str(&format!(" {:^w$} │", cell, w = col_widths[i]));
         }
