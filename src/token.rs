@@ -6,17 +6,14 @@ pub enum Token {
     Or,
     Xor,
     Implies, // ->
-    Iff,     // <->
+    Iff, // <->
     LParen,
     RParen
 }
 
-/// Converts a string into logical tokens.
+/// Normalizes input into parser tokens
 ///
-/// Normalizes operator styles and keywords into a small set of tokens used by the parser.
-///
-/// `src` Expression as string
-/// Returns a list of normalized tokens
+/// `expression` Expression as string; Returns a list of normalized tokens
 pub fn tokenize(expression: &str) -> Vec<Token> {
     let mut tokens = Vec::new();
     let mut it = expression.chars().peekable();

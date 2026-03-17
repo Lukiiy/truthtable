@@ -15,18 +15,18 @@ pub enum Expression {
 impl Expression {
     /// Evaluates this expression
     ///
-    /// `env` Mapping of variable names to boolean values
+    /// `map` Mapping of variable names to boolean values
     ///
     /// Returns the boolean for the expression
-    pub fn evaluate(&self, env: &BTreeMap<String, bool>) -> bool {
+    pub fn evaluate(&self, map: &BTreeMap<String, bool>) -> bool {
         match self {
-            Expression::Var(n) => *env.get(n).expect("???"),
-            Expression::Not(e) => !e.evaluate(env),
-            Expression::And(a, b) => a.evaluate(env) && b.evaluate(env),
-            Expression::Or(a, b) => a.evaluate(env) || b.evaluate(env),
-            Expression::Xor(a, b) => a.evaluate(env) ^ b.evaluate(env),
-            Expression::Implies(a, b) => !a.evaluate(env) || b.evaluate(env),
-            Expression::Iff(a, b) => a.evaluate(env) == b.evaluate(env)
+            Expression::Var(n) => *map.get(n).expect("???"),
+            Expression::Not(e) => !e.evaluate(map),
+            Expression::And(a, b) => a.evaluate(map) && b.evaluate(map),
+            Expression::Or(a, b) => a.evaluate(map) || b.evaluate(map),
+            Expression::Xor(a, b) => a.evaluate(map) ^ b.evaluate(map),
+            Expression::Implies(a, b) => !a.evaluate(map) || b.evaluate(map),
+            Expression::Iff(a, b) => a.evaluate(map) == b.evaluate(map)
         }
     }
 
@@ -48,9 +48,9 @@ impl Expression {
 
     /// Gets non-var subexpressions
     ///
-    /// Each is added once based on its display string. The root expression is excluded.
+    /// Each is added once based on its display string (root expr. excluded)
     ///
-    /// `collected` List of collected display keys
+    /// `collected` List of collected display keys;
     /// `out` Collected expressions
     pub fn get_subexpressions<'a>(&'a self, collected: &mut Vec<String>, out: &mut Vec<&'a Expression>) {
         match self {
