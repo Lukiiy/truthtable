@@ -10,53 +10,47 @@ fn bool2str<'a>(val: bool, t: &'a str, f: &'a str) -> &'a str {
 ///
 /// Each column is either a variable or a subexpression
 pub fn print_table(expressions: &[Expression], truesym: &str, falsesym: &str) {
-    let mut var_set = BTreeSet::new();
+    let variables: Vec<String> = {
+        let mut set = BTreeSet::new();
 
-    for expr in expressions {
-        expr.get_variables(&mut var_set);
-    }
+        expressions.iter().for_each(|e| e.get_variables(&mut set));
+        set.into_iter().collect()
+    };
 
-    let variables: Vec<String> = var_set.into_iter().collect();
+    let columns: Vec<&Expression> = {
+        let mut already = Vec::new();
+        let mut cols = Vec::new();
 
-    let mut already = Vec::new();
-    let mut columns = Vec::new();
+        for expr in expressions {
+            expr.get_subexpressions(&mut already, &mut cols);
 
-    for expr in expressions {
-        let root = expr.to_string();
+            let root = expr.to_string();
 
-        expr.get_subexpressions(&mut already, &mut columns);
-
-        if !already.contains(&root) {
-            already.push(root);
-            columns.push(expr);
+            if !already.contains(&root) {
+                already.push(root);
+                cols.push(expr);
+            }
         }
-    }
 
-    // headers
-    let var_headers = &variables;
+        cols
+    };
+
     let col_headers: Vec<String> = columns.iter().map(|e| e.to_string()).collect();
 
-    let width = |s: &str| s.chars().count().max(1); // column widths
-    let sym_width = truesym.chars().count().max(falsesym.chars().count());
+    let width = |s: &str| s.chars().count().max(1).max(truesym.chars().count().max(falsesym.chars().count()));
 
-    let var_widths: Vec<_> = var_headers.iter().map(|h| width(h).max(sym_width)).collect();
-    let col_widths: Vec<_> = col_headers.iter().map(|h| width(h).max(sym_width)).collect();
+    let var_widths: Vec<usize> = variables.iter().map(|h| width(h)).collect();
+    let col_widths: Vec<usize> = col_headers.iter().map(|h| width(h)).collect();
 
     let mut header = String::from("│");
     let mut divider = String::from("┼");
 
-    let mut add_column = |text: &str, w: usize| {
-        header.push_str(&format!(" {:^w$} │", text, w = w));
+    let all_headers = variables.iter().map(String::as_str).zip(var_widths.iter().copied()).chain(col_headers.iter().map(String::as_str).zip(col_widths.iter().copied()));
+
+    for (text, w) in all_headers {
+        header.push_str(&format!(" {:^w$} │", text));
         divider.push_str(&"─".repeat(w + 2));
         divider.push('┼');
-    };
-
-    for (i, h) in var_headers.iter().enumerate() {
-        add_column(h, var_widths[i]);
-    }
-
-    for (i, h) in col_headers.iter().enumerate() {
-        add_column(h, col_widths[i]);
     }
 
     divider.pop();
@@ -65,38 +59,25 @@ pub fn print_table(expressions: &[Expression], truesym: &str, falsesym: &str) {
     let top = divider.replace('┼', "┬").replace('┤', "┐").replacen('┬', "┌", 1);
     let bottom = divider.replace('┼', "┴").replace('┤', "┘").replacen('┴', "└", 1);
 
-    println!("{top}");
-    println!("{header}");
-    println!("{divider}");
+    println!("{top}\n{header}\n{divider}");
 
-    // rows
     let vars_size = variables.len();
-    let row_count = 1 << vars_size;
 
-    for row_idx in 0..row_count {
-        let mut assignment = BTreeMap::new();
+    for row_idx in 0..(1 << vars_size) {
+        let assignment: BTreeMap<_, _> = variables.iter().enumerate()
+            .map(|(i, var)| (var.clone(), ((row_idx >> (vars_size - 1 - i)) & 1) == 1))
+            .collect();
 
-        for (i, var) in variables.iter().enumerate() {
-            let bit = (row_idx >> (vars_size - 1 - i)) & 1;
+        let mut row = String::from("│");
 
-            assignment.insert(var.clone(), bit == 1);
+        let var_cells = variables.iter().zip(&var_widths).map(|(var, &w)| (bool2str(*assignment.get(var).unwrap(), truesym, falsesym), w));
+        let col_cells = columns.iter().zip(&col_widths).map(|(expr, &w)| (bool2str(expr.evaluate(&assignment), truesym, falsesym), w));
+
+        for (cell, w) in var_cells.chain(col_cells) {
+            row.push_str(&format!(" {:^w$} │", cell));
         }
 
-        let mut row_line = String::from("│");
-
-        for (i, var) in variables.iter().enumerate() { // variable columns
-            let cell = bool2str(*assignment.get(var).unwrap(), truesym, falsesym);
-
-            row_line.push_str(&format!(" {:^w$} │", cell, w = var_widths[i]));
-        }
-
-        for (i, expr) in columns.iter().enumerate() { // expression columns
-            let cell = bool2str(expr.evaluate(&assignment), truesym, falsesym);
-
-            row_line.push_str(&format!(" {:^w$} │", cell, w = col_widths[i]));
-        }
-
-        println!("{row_line}");
+        println!("{row}");
     }
 
     println!("{bottom}");
