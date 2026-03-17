@@ -21,8 +21,8 @@ pub fn tokenize(expression: &str) -> Vec<Token> {
     let mut tokens = Vec::new();
     let mut it = expression.chars().peekable();
 
-    while let Some(&c) = it.peek() {
-        match c {
+    while let Some(&current_char) = it.peek() {
+        match current_char {
             ' ' | '\t' | '\n' | '\r' => { it.next(); }
 
             '(' | '[' | '{' => {
@@ -97,13 +97,13 @@ pub fn tokenize(expression: &str) -> Vec<Token> {
                 }
             }
 
-            // identifiers / keywords: letters or '_' start, then alnum or '_'
-            c if c.is_ascii_alphabetic() || c == '_' => {
+            // ids / keywords: letters or '_' start, then alphanum or '_'
+            first_char if first_char.is_ascii_alphabetic() || first_char == '_' => {
                 let mut word = String::new();
 
-                while let Some(&ch) = it.peek() {
-                    if ch.is_ascii_alphanumeric() || ch == '_' {
-                        word.push(ch);
+                while let Some(&next) = it.peek() {
+                    if next.is_ascii_alphanumeric() || next == '_' {
+                        word.push(next);
                         it.next();
                     } else { break; }
                 }
