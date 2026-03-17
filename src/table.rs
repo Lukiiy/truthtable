@@ -37,9 +37,10 @@ pub fn print_table(expressions: &[Expression], truesym: &str, falsesym: &str) {
     let col_headers: Vec<String> = columns.iter().map(|e| e.to_string()).collect();
 
     let width = |s: &str| s.chars().count().max(1); // column widths
+    let sym_width = truesym.chars().count().max(falsesym.chars().count());
 
-    let var_widths: Vec<_> = var_headers.iter().map(|h| width(h)).collect();
-    let col_widths: Vec<_> = col_headers.iter().map(|h| width(h)).collect();
+    let var_widths: Vec<_> = var_headers.iter().map(|h| width(h).max(sym_width)).collect();
+    let col_widths: Vec<_> = col_headers.iter().map(|h| width(h).max(sym_width)).collect();
 
     let mut header = String::from("│");
     let mut divider = String::from("┼");
