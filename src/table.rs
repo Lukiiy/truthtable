@@ -63,7 +63,7 @@ pub fn print_table(expressions: &[Expression], truesym: &str, falsesym: &str) {
 
     let vars_size = variables.len();
 
-    for row_idx in 0..(1 << vars_size) {
+    for row_idx in (0..(1 << vars_size)).rev() {
         let assignment: BTreeMap<_, _> = variables.iter().enumerate()
             .map(|(i, var)| (var.clone(), ((row_idx >> (vars_size - 1 - i)) & 1) == 1))
             .collect();
