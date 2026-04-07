@@ -6,20 +6,20 @@ mod table;
 use crate::{expression::Expression, parser::Parser, table::print_table};
 
 fn usage() {
-    eprintln!("Usage: truthtable \"<expression>\" \"<expression2>\" ...");
-    eprintln!();
-    eprintln!("Operators:");
-    eprintln!(" NOT:  ! ~ not");
-    eprintln!(" AND:  & && and");
-    eprintln!(" OR:  | || or");
-    eprintln!(" XOR:  ^ xor");
-    eprintln!(" IMPLIES:  -> => impl");
-    eprintln!(" BICONDITIONAL:  <-> <=> iff");
-    eprintln!();
-    eprintln!("Additional params:");
-    eprintln!(" --t <true symbol>");
-    eprintln!(" --f <false symbol>");
-    eprintln!()
+    println!("Usage: truthtable \"<expression>\" \"<expression2>\" ...");
+    println!();
+    println!("Operators:");
+    println!(" NOT:  ! ~ not");
+    println!(" AND:  & && and");
+    println!(" OR:  | || or");
+    println!(" XOR:  ^ xor");
+    println!(" IMPLIES:  -> => impl");
+    println!(" BICONDITIONAL:  <-> <=> iff");
+    println!();
+    println!("Additional params:");
+    println!(" --t <true symbol>");
+    println!(" --f <false symbol>");
+    println!()
 }
 
 fn next_or_exit<I: Iterator<Item = String>>(argv: &mut I) -> String {
