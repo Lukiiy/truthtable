@@ -1,6 +1,13 @@
 [package]
 name = "TruthTable"
+description = "A truth table generator"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+
+[profile.release]
+opt-level = "z"
+lto = "thin"
+strip = "symbols"
+panic = "abort"
